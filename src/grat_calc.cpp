@@ -18,17 +18,22 @@ namespace grat
 GRATOutputs GRATCalculator::computePayoutResults(GRATInputs inputs) {
     core::PayoutTable<GRATPayoutTableRow> payout_table;
     core::money_t beginning_principal = inputs.initial_principal();
+    core::money_t no_planning_initial_principal = beginning_principal;
     core::rate_t growth_rate = inputs.growth_rate();
-    std::cout << "Initial payout rate: " << inputs.initial_payout_rate() << std::endl;
 
     bool success = true;
     core::money_t total_growth = 0;
     core::money_t total_payment_to_grantor = 0;
-    core::money_t payment_to_grantor = inputs.initial_payout_rate() * beginning_principal;
+    core::rate_t initial_payout_rate = inputs.initial_payout_rate();
+    if(inputs.solve_for_payout_rate()) {
+        initial_payout_rate = solveForInitialPayoutRate(inputs);
+    }
+    core::money_t payment_to_grantor = initial_payout_rate * beginning_principal;
     core::money_t left_in_trust;
 
     core::money_t present_value_of_trust = beginning_principal;
     for(int i = 1; i <= inputs.term_in_year(); i++) {
+        no_planning_initial_principal += no_planning_initial_principal*growth_rate;
         core::money_t growth = beginning_principal * growth_rate;
         total_growth += growth;
         core::money_t principal_w_growth = beginning_principal + growth;
@@ -56,9 +61,10 @@ GRATOutputs GRATCalculator::computePayoutResults(GRATInputs inputs) {
     core::money_t total_value = inputs.initial_principal() + total_growth;
 
     // Depending on the gift and estate tax rates, the grantor will choose if he wants to transfer the remaining wealth to the beneficiary
-    core::money_t no_planning_tax = std::min(inputs.estate_tax_rate(), inputs.gift_tax_rate()) * total_value;
+    core::money_t no_planning_tax = std::min(inputs.estate_tax_rate(), inputs.gift_tax_rate()) * no_planning_initial_principal;
 
     core::money_t gift_tax_on_npv = present_value_of_trust*inputs.gift_tax_rate();
+    gift_tax_on_npv = std::max(gift_tax_on_npv, 0.0);
     core::money_t estate_tax_on_refunded_amt = total_payment_to_grantor * inputs.estate_tax_rate();
     
     GRATOutputs output(
@@ -96,13 +102,13 @@ GRATOutputs GRATCalculator::computePayoutResults(GRATInputs inputs) {
  * @return core::rate_t Initial payout rate for the calculator
  */
 core::rate_t GRATCalculator::solveForInitialPayoutRate(
-    GRATInputs inputs, core::money_t target_npv) {
+    GRATInputs inputs) {
 
     core::money_t principal = inputs.initial_principal();
     core::rate_t stepup_rate = inputs.payout_stepup_rate();
     core::rate_t hurdle_rate = inputs.hurdle_rate();
     core::time::year_t term = inputs.term_in_year();
-
+    core::money_t target_npv = inputs.target_npv();
     core::rate_t npv_by_principal = target_npv/principal;
 
     if(stepup_rate == hurdle_rate) {

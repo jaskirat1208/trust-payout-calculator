@@ -26,7 +26,7 @@ private:
      **/
     core::rate_t m_hurdle_rate;
     bool m_solve_for_payout_rate=false;
-    core::money_t target_npv = 0;
+    core::money_t m_target_npv = 0;
 
 public:
     GRATInputs(
@@ -36,6 +36,8 @@ public:
         core::rate_t initial_payout_rate, 
         core::rate_t payout_stepup_rate, 
         core::rate_t hurdle_rate,
+        bool solve_for_payout_rate = false,
+        core::money_t target_npv = 0,
         core::rate_t estate_tax_rate = 0.4,
         core::rate_t gift_tax_rate = 0.4
     ): 
@@ -46,7 +48,9 @@ public:
         m_payout_stepup_rate(payout_stepup_rate),
         m_hurdle_rate(hurdle_rate),
         m_estate_tax_rate(estate_tax_rate),
-        m_gift_tax_rate(gift_tax_rate) {}
+        m_gift_tax_rate(gift_tax_rate),
+        m_solve_for_payout_rate(solve_for_payout_rate),
+        m_target_npv(target_npv) {}
 
     inline core::money_t initial_principal() {
         return m_initial_principal; 
@@ -83,6 +87,14 @@ public:
      */
     inline core::rate_t hurdle_rate() {
         return m_hurdle_rate;
+    }
+
+    inline bool solve_for_payout_rate() {
+        return m_solve_for_payout_rate;
+    }
+
+    inline core::money_t target_npv() {
+        return m_target_npv;
     }
 };
 

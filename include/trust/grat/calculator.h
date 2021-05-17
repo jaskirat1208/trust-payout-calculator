@@ -8,7 +8,7 @@ class GRATCalculator
 {
 public:
     GRATCalculator() = default;
-    core::rate_t solveForInitialPayoutRate(GRATInputs inputs, core::money_t target_npv);
+    core::rate_t solveForInitialPayoutRate(GRATInputs inputs);
     GRATOutputs computePayoutResults(GRATInputs inputs);
 };
     
