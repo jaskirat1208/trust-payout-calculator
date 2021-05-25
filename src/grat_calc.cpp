@@ -29,6 +29,7 @@ GRATOutputs GRATCalculator::computePayoutResults(GRATInputs inputs) {
         initial_payout_rate = solveForInitialPayoutRate(inputs);
     }
     core::money_t payment_to_grantor = initial_payout_rate * beginning_principal;
+    core::money_t init_payment_to_grantor = payment_to_grantor;
     core::money_t left_in_trust;
 
     core::money_t present_value_of_trust = beginning_principal;
@@ -44,8 +45,9 @@ GRATOutputs GRATCalculator::computePayoutResults(GRATInputs inputs) {
             ending_principal = 0;
             payment_to_grantor = principal_w_growth;
         }
-        present_value_of_trust -= payment_to_grantor/pow(1+inputs.hurdle_rate(), i);
-        total_payment_to_grantor += payment_to_grantor;
+        
+        present_value_of_trust -= init_payment_to_grantor*(pow(1+inputs.payout_stepup_rate(), i-1))/pow(1+inputs.hurdle_rate(), i);
+        total_payment_to_grantor = total_payment_to_grantor*(1+growth_rate) + payment_to_grantor;
 
         GRATPayoutTableRow row{
             i, beginning_principal, growth, principal_w_growth, payment_to_grantor, ending_principal, success
@@ -66,14 +68,15 @@ GRATOutputs GRATCalculator::computePayoutResults(GRATInputs inputs) {
     core::money_t gift_tax_on_npv = present_value_of_trust*inputs.gift_tax_rate();
     gift_tax_on_npv = std::max(gift_tax_on_npv, 0.0);
     core::money_t estate_tax_on_refunded_amt = total_payment_to_grantor * inputs.estate_tax_rate();
-    
+    std::cout << "No planning initial Principal: " << no_planning_initial_principal << std::endl;
+    std::cout << "Gift tax paid: " << gift_tax_on_npv << std::endl;
     GRATOutputs output(
         inputs.initial_principal(),
         total_growth,
         total_value,
         gift_tax_on_npv + estate_tax_on_refunded_amt,
         no_planning_tax,
-        total_value - no_planning_tax,
+        no_planning_initial_principal - no_planning_tax,
         left_in_trust + total_payment_to_grantor - estate_tax_on_refunded_amt - gift_tax_on_npv
     );
 

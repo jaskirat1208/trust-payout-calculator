@@ -23,7 +23,7 @@ TEST(GRAT_CALCULATOR_PAYOUT_TEST, FailedGRAT) {
 
     calc::grat::GRATInputs inputs(
         1000000,
-        5, 0.05, 0.5, 0.1, 0.015, true, 0
+        5, -0.05, 0.5, 0.1, 0.015, true, 0
     );
     calc::grat::GRATOutputs result = calculator.computePayoutResults(inputs);
     std::cout << result;
@@ -36,7 +36,21 @@ TEST(GRAT_CALCULATOR_PAYOUT_TEST, GRATWithConstAnnuities) {
 
     calc::grat::GRATInputs inputs(
         1000000,
-        5, 0.05, 0.5, 0, 0.015, true, 0
+        15, 0.05, 0.5, 0.01, 0.015, true, 0
+    );
+    calc::grat::GRATOutputs result = calculator.computePayoutResults(inputs);
+    std::cout << result;
+}
+
+
+TEST(GRAT_CALCULATOR_PAYOUT_TEST, GRATWithNegativeTaxSavings) {
+    EXPECT_EQ(true, true);
+
+    calc::grat::GRATCalculator calculator;
+
+    calc::grat::GRATInputs inputs(
+        1000000,
+        15, -0.05, 0.05, 0.01, 0.015, true, 0
     );
     calc::grat::GRATOutputs result = calculator.computePayoutResults(inputs);
     std::cout << result;

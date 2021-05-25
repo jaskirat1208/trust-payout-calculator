@@ -178,7 +178,7 @@ public:
     }
 
     inline core::money_t tax_savings() {
-        return m_no_planning_tax - m_planning_tax;
+        return m_amount_to_heir_planning - m_amount_to_heir_no_planning;
     }
 };
 
